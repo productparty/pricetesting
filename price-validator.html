@@ -718,9 +718,13 @@
         // ============================================
         // Event Listeners - Attach IMMEDIATELY (not in DOMContentLoaded)
         // ============================================
-        excelFileInput.addEventListener('change', handleFileSelect);
-        validateBtn.addEventListener('click', handleValidateClick);
-        resetBtn.addEventListener('click', handleResetClick);
+        log(`excelFileInput element: ${excelFileInput ? 'FOUND' : 'NULL'}`);
+        log(`validateBtn element: ${validateBtn ? 'FOUND' : 'NULL'}`);
+        log(`resetBtn element: ${resetBtn ? 'FOUND' : 'NULL'}`);
+
+        if (excelFileInput) excelFileInput.addEventListener('change', handleFileSelect);
+        if (validateBtn) validateBtn.addEventListener('click', handleValidateClick);
+        if (resetBtn) resetBtn.addEventListener('click', handleResetClick);
         log('Event listeners attached');
 
         // ============================================

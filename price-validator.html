@@ -731,8 +731,10 @@
         // File Selection Handler
         // ============================================
         async function handleFileSelect() {
+            console.log('handleFileSelect called'); // Force console log
             const file = excelFileInput.files[0];
             log(`File selected: ${file ? file.name : 'none'}`);
+            console.log('File object:', file); // Log file details
 
             if (!file) {
                 fileNameSpan.textContent = 'No file selected';

@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Validation Tool - Browser Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        main {
+            flex: 1;
+            padding: 40px 30px;
+        }
+
+        footer {
+            background: #f5f5f5;
+            color: #666;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        section h2 {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .upload-area {
+            position: relative;
+            border: 3px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f9f7ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background: #f3ebff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8deff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+        }
+
+        .file-label span:nth-child(2) {
+            font-size: 1.1em;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .file-info {
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .file-requirements {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .file-requirements p {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .file-requirements ul {
+            list-style-position: inside;
+            color: #666;
+            column-count: 2;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #666;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+
+        .config-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .config-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .config-row label {
+            font-weight: 600;
+            color: #333;
+            min-width: 150px;
+        }
+
+        .config-row input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .progress-section {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+        }
+
+        .results-summary {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .summary-stat {
+            flex: 1;
+            min-width: 150px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .summary-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .summary-value.pass {
+            color: #4caf50;
+        }
+
+        .summary-value.fail {
+            color: #f44336;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        .results-table thead {
+            background: #f5f5f5;
+            position: sticky;
+            top: 0;
+        }
+
+        .results-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+
+        .results-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .results-table a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .results-table a:hover {
+            text-decoration: underline;
+        }
+
+        .status-pass {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #4caf50;
+            font-weight: 600;
+        }
+
+        .status-pass::before {
+            content: '✓';
+            font-size: 1.2em;
+        }
+
+        .status-fail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #f44336;
+            font-weight: 600;
+        }
+
+        .status-fail::before {
+            content: '✕';
+            font-size: 1.2em;
+        }
+
+        .message-yes {
+            color: #4caf50;
+            font-weight: 600;
+        }
+
+        .message-no {
+            color: #f44336;
+            font-weight: 600;
+        }
+
+        .error-section {
+            background: #ffebee;
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+        }
+
+        .error-message {
+            color: #c62828;
+            font-size: 1.1em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            main {
+                padding: 20px;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .results-summary {
+                flex-direction: column;
+            }
+
+            .summary-stat {
+                min-width: unset;
+            }
+
+            .file-requirements ul {
+                column-count: 1;
+            }
+
+            .results-table {
+                font-size: 0.85em;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 10px;
+            }
+
+            .config-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .config-row label {
+                min-width: unset;
+            }
+
+            .config-row input {
+                min-width: unset;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Price Validation Tool</h1>
+            <p class="subtitle">Browser-based price validator for Pet Supplies Plus (No Installation Required)</p>
+        </header>
+
+        <main>
+            <!-- Configuration Section -->
+            <section>
+                <h2>Configuration</h2>
+                <div class="config-section">
+                    <div class="config-row">
+                        <label for="corsProxy">CORS Proxy URL:</label>
+                        <input type="text" id="corsProxy" value="https://r.jina.ai/http://" placeholder="https://r.jina.ai/http://">
+                    </div>
+                    <div class="config-row">
+                        <label for="searchMessage">Search Message:</label>
+                        <input type="text" id="searchMessage" value="View Price in Cart" placeholder="View Price in Cart">
+                    </div>
+                    
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                        💡 Tip: If the primary CORS proxy is slow or down, try: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">https://corsproxy.io/?</code>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Upload Section -->
+            <section>
+                <h2>Step 1: Upload Excel File</h2>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="excelFile" accept=".xlsx" class="file-input" aria-label="Select Excel file">
+                    <label for="excelFile" class="file-label">
+                        <span class="upload-icon">📁</span>
+                        <span>Click to select or drag and drop your .xlsx file</span>
+                        <span class="file-info" id="fileName">No file selected</span>
+                    </label>
+                </div>
+                <div class="file-requirements">
+                    <p><strong>Required columns (in this order):</strong></p>
+                    <ul>
+                        <li>Scenario</li>
+                        <li>SKU</li>
+                        <li>Product Name</li>
+                        <li>List Price</li>
+                        <li>PPC Price</li>
+                        <li>IMAP</li>
+                        <li>MAP</li>
+                        <li>Expected Price</li>
+                        <li>URL</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Validation Section -->
+            <section>
+                <h2>Step 2: Validate Prices</h2>
+                <button id="validateBtn" class="btn btn-primary" disabled>Validate Prices</button>
+                <button id="resetBtn" class="btn btn-secondary hidden">Start Over</button>
+                <div class="warning hidden" id="corsWarning">
+                    ⚠️ <strong>Note:</strong> This tool uses a CORS proxy to fetch web pages. Processing may be slow. For better performance, consider using the server version.
+                </div>
+            </section>
+
+            <!-- Progress Section -->
+            <section id="progressSection" class="hidden">
+                <h2>Validation Progress</h2>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="progressText">0 of 0 rows processed</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="resultsSection" class="hidden">
+                <h2>Validation Results</h2>
+                <div class="results-summary">
+                    <div class="summary-stat">
+                        <span class="summary-label">Total Rows:</span>
+                        <span class="summary-value" id="totalRows">0</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="summary-label">Passed:</span>
+                        <span class="summary-value pass" id="passCount">0</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="summary-label">Failed:</span>
+                        <span class="summary-value fail" id="failCount">0</span>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="resultsTable" class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>SKU</th>
+                                <th>Product Name</th>
+                                <th>Expected Price</th>
+                                <th>Actual Price</th>
+                                <th>Message Found</th>
+                                <th>Status</th>
+                                <th>URL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Error Section -->
+            <section id="errorSection" class="hidden">
+                <h2>Validation Error</h2>
+                <div class="error-message" id="errorMessage"></div>
+            </section>
+
+            <!-- Log Section (added) -->
+            <section id="logSection">
+                <h2>Activity Log</h2>
+                <div style="background:#0f1720;color:#d1d5db;padding:12px;border-radius:8px;max-height:220px;overflow:auto;margin-bottom:10px">
+                    <pre id="logArea" style="white-space:pre-wrap;font-family:monospace;font-size:12px"></pre>
+                </div>
+                <button id="downloadLogBtn" class="btn btn-secondary">Download Log</button>
+            </section>
+        </main>
+
+        <footer>
+            <p>Price Validation Tool v1.0 - Browser Edition (No Server Required) | Powered by SheetJS + CORS Proxy</p>
+        </footer>
+    </div>
+
+    <!-- SheetJS Library from CDN (dynamic loader with fallbacks) -->
+    <script>
+    // Early bootstrap logger (used before main logger is initialized)
+    window.__earlyLogs = window.__earlyLogs || [];
+    function __earlyLog(msg, level = 'info') {
+        const time = new Date().toISOString();
+        const entry = `[${time}] ${level.toUpperCase()}: ${msg}`;
+        window.__earlyLogs.push(entry);
+        try { if (level === 'error') console.error(entry); else console.log(entry); } catch (e) { }
+    }
+
+    async function loadScript(url) {
+        return new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = url;
+            s.onload = () => resolve(url);
+            s.onerror = () => reject(new Error('Failed to load ' + url));
+            document.head.appendChild(s);
+        });
+    }
+
+    async function ensureSheetJS() {
+        if (window.XLSX) return;
+        const cdns = [
+            'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+            'https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js',
+            'https://unpkg.com/xlsx/dist/xlsx.full.min.js'
+        ];
+        for (const url of cdns) {
+            try {
+                __earlyLog('Attempting to load SheetJS from ' + url);
+                await loadScript(url);
+                if (window.XLSX) {
+                    __earlyLog('Loaded SheetJS from ' + url);
+                    return;
+                }
+            } catch (e) {
+                __earlyLog('SheetJS load failed: ' + (e && e.message ? e.message : String(e)), 'error');
+            }
+        }
+        throw new Error('Could not load SheetJS from CDNs. Check network or try a different CDN.');
+    }
+    </script>
+
+    <script>
+    (async () => {
+        try {
+            await ensureSheetJS();
+        } catch (e) {
+            // If SheetJS fails to load, surface the error immediately
+            const logArea = document.getElementById && document.getElementById('logArea');
+            const msg = 'Fatal: SheetJS (XLSX) failed to load: ' + (e && e.message ? e.message : String(e));
+            if (logArea) logArea.textContent += msg + '\n';
+            console.error(msg);
+            const errSection = document.getElementById && document.getElementById('errorSection');
+            const errMsg = document.getElementById && document.getElementById('errorMessage');
+            if (errSection && errMsg) {
+                errSection.classList.remove('hidden');
+                errMsg.textContent = msg;
+            }
+            return; // stop initializing further
+        }
+
+        // ============================================
+        // Global State
+        // ============================================
+        let excelData = [];
+        let results = [];
+        const logs = [];
+
+        // ============================================
+        // DOM Elements
+        // ============================================
+        const logArea = document.getElementById('logArea');
+        const downloadLogBtn = document.getElementById('downloadLogBtn');
+        const excelFileInput = document.getElementById('excelFile');
+        const fileNameSpan = document.getElementById('fileName');
+        const validateBtn = document.getElementById('validateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const uploadArea = document.querySelector('.upload-area');
+        const progressSection = document.getElementById('progressSection');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsBody = document.getElementById('resultsBody');
+        const errorSection = document.getElementById('errorSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const corsProxyInput = document.getElementById('corsProxy');
+        const searchMessageInput = document.getElementById('searchMessage');
+        const corsWarning = document.getElementById('corsWarning');
+
+        // Simple logger: writes to on-page log and console
+        function log(msg, level = 'info') {
+            const time = new Date().toISOString();
+            const entry = `[${time}] ${level.toUpperCase()}: ${msg}`;
+            logs.push(entry);
+            try {
+                if (logArea) {
+                    logArea.textContent += entry + '\n';
+                    logArea.parentElement.scrollTop = logArea.parentElement.scrollHeight;
+                }
+            } catch (e) { /* ignore UI log failures */ }
+            if (level === 'error') console.error(entry); else console.log(entry);
+        }
+
+        // Flush any early logs captured before the main logger was initialized
+        if (window.__earlyLogs && window.__earlyLogs.length) {
+            try {
+                window.__earlyLogs.forEach(e => {
+                    logs.push(e);
+                    if (logArea) {
+                        logArea.textContent += e + '\n';
+                        logArea.parentElement.scrollTop = logArea.parentElement.scrollHeight;
+                    }
+                });
+            } catch (flushErr) { /* ignore flush errors */ }
+            window.__earlyLogs = [];
+        }
+
+        downloadLogBtn?.addEventListener('click', () => {
+            const blob = new Blob([logs.join('\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `price-validator-log-${new Date().toISOString()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Global error handlers
+        window.addEventListener('error', (ev) => {
+            log(`Uncaught error: ${ev.message} at ${ev.filename}:${ev.lineno}:${ev.colno}`, 'error');
+        });
+        window.addEventListener('unhandledrejection', (ev) => {
+            const reason = ev.reason && ev.reason.message ? ev.reason.message : String(ev.reason);
+            log(`Unhandled rejection: ${reason}`, 'error');
+        });
+
+        // ============================================
+        // Event Listeners
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            excelFileInput.addEventListener('change', handleFileSelect);
+            validateBtn.addEventListener('click', handleValidateClick);
+            resetBtn.addEventListener('click', handleResetClick);
+            log('UI initialized');
+            // Hide log if empty initially
+            if (logs.length === 0 && logArea) logArea.textContent = '';
+        });
+
+        // ============================================
+        // File Selection Handler
+        // ============================================
+        async function handleFileSelect() {
+            const file = excelFileInput.files[0];
+            log(`File selected: ${file ? file.name : 'none'}`);
+
+            if (!file) {
+                fileNameSpan.textContent = 'No file selected';
+                validateBtn.disabled = true;
+                return;
+            }
+
+            // Ensure SheetJS (XLSX) is available before attempting to parse
+            if (!window.XLSX) {
+                log('XLSX not yet available; waiting up to 5s for SheetJS to load...');
+                let waited = 0;
+                const waitInterval = 100;
+                while (!window.XLSX && waited < 5000) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await new Promise(r => setTimeout(r, waitInterval));
+                    waited += waitInterval;
+                }
+                if (!window.XLSX) {
+                    const msg = 'SheetJS (XLSX) is not loaded. Please reload the page or try a different network/browser.';
+                    log(msg, 'error');
+                    showError(msg);
+                    return;
+                }
+                log('SheetJS (XLSX) is now available.');
+            }
+
+            if (!file.name.endsWith('.xlsx')) {
+                fileNameSpan.textContent = 'Invalid file type. Please select a .xlsx file.';
+                validateBtn.disabled = true;
+                return;
+            }
+
+            try {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const rawData = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (!rawData || rawData.length === 0) {
+                        showError('Excel file is empty');
+                        return;
+                    }
+
+                    // Validate headers
+                    const headers = Object.keys(rawData[0]).map(h => h.trim());
+                    const expectedHeaders = ['Scenario', 'SKU', 'Product Name', 'List Price', 'PPC Price', 'IMAP', 'MAP', 'Expected Price', 'URL'];
+                    
+                    const validHeaders = expectedHeaders.every(h =>
+                        headers.some(ah => ah.toLowerCase() === h.toLowerCase())
+                    );
+
+                    if (!validHeaders) {
+                        showError(`Invalid headers. Expected: ${expectedHeaders.join(', ')}`);
+                        return;
+                    }
+
+                    // Parse data
+                    excelData = rawData.map((row, index) => {
+                        const normalizedRow = {};
+                        for (const [key, value] of Object.entries(row)) {
+                            normalizedRow[key.trim().toLowerCase()] = value;
+                        }
+
+                        return {
+                            scenario: normalizedRow.scenario || '',
+                            sku: normalizedRow.sku?.toString().trim() || '',
+                            productName: normalizedRow['product name'] || '',
+                            listPrice: parseFloat(normalizedRow['list price']) || 0,
+                            ppcPrice: parseFloat(normalizedRow['ppc price']) || 0,
+                            imap: parseFloat(normalizedRow['imap']) || 0,
+                            map: parseFloat(normalizedRow['map']) || 0,
+                            expectedPrice: parseFloat(normalizedRow['expected price']) || 0,
+                            url: normalizedRow.url?.toString().trim() || '',
+                            rowNum: index + 2,
+                        };
+                    }).filter(row => row.url && row.expectedPrice);
+
+                    fileNameSpan.textContent = `📄 ${file.name} (${excelData.length} valid rows)`;
+                    log(`Parsed ${excelData.length} valid rows from ${file.name}`);
+                    validateBtn.disabled = false;
+                    corsWarning.classList.remove('hidden');
+                    hideAllSections();
+                };
+                reader.readAsArrayBuffer(file);
+            } catch (error) {
+                log('File parsing error: ' + (error && error.message ? error.message : String(error)), 'error');
+                showError(`File parsing error: ${error.message}`);
+            }
+        }
+
+        // ============================================
+        // Validation Handler
+        // ============================================
+        async function handleValidateClick() {
+            if (excelData.length === 0) {
+                showError('No valid data to validate');
+                return;
+            }
+
+            validateBtn.disabled = true;
+            results = [];
+
+            hideAllSections();
+            progressSection.classList.remove('hidden');
+
+            try {
+                const corsProxy = corsProxyInput.value.trim();
+                const searchMsg = searchMessageInput.value.trim();
+
+                log(`Starting validation for ${excelData.length} rows. Proxy="${corsProxy}", message="${searchMsg}"`);
+                 // Process URLs sequentially to avoid rate limiting
+                 for (let i = 0; i < excelData.length; i++) {
+                     const row = excelData[i];
+                     const result = await scrapeAndValidate(row, corsProxy, searchMsg);
+                     log(`Row ${i+1}/${excelData.length} processed: ${row.url} - ${result.pass ? 'PASS' : 'FAIL'}${result.error ? ' - ERROR: ' + result.error : ''}`);
+                     results.push(result);
+
+                    // Update progress
+                    const percent = ((i + 1) / excelData.length) * 100;
+                    progressFill.style.width = percent + '%';
+                    progressText.textContent = `${i + 1} of ${excelData.length} rows processed`;
+                    progressPercent.textContent = Math.round(percent) + '%';
+
+                    // Small delay between requests
+                    if (i < excelData.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+
+                showResults();
+            } catch (error) {
+                log('Validation run error: ' + (error && error.message ? error.message : String(error)), 'error');
+                showError(error.message);
+            } finally {
+                validateBtn.disabled = false;
+            }
+        }
+
+        // ============================================
+        // Scrape and Validate Single URL
+        // ============================================
+
+        // Attempt fetching targetUrl via a list of proxies with timeout and retries
+        async function fetchWithProxy(targetUrl, proxies) {
+            const timeoutMs = 15000;
+            // Gather proxies: prefer explicit list, otherwise use input field
+            let candidates = (proxies || []).slice();
+            if ((!candidates || candidates.length === 0) && corsProxyInput && corsProxyInput.value) {
+                candidates = corsProxyInput.value.split(',').map(p => p.trim()).filter(Boolean);
+            }
+
+            // Add built-in fallback proxies to try if configured ones fail
+            const builtIn = [
+                'https://r.jina.ai/http://',
+                'https://api.codetabs.com/v1/proxy?quest=',
+                'https://corsproxy.io/?',
+                'https://thingproxy.freeboard.io/fetch/'
+            ];
+
+            let lastErr = null;
+
+            // helper to build full proxy URL based on prefix pattern
+            function buildProxyUrl(prefix, target) {
+                // If prefix contains a placeholder for raw or encoded URL, use it
+                if (prefix.includes('{encoded}')) return prefix.replace('{encoded}', encodeURIComponent(target));
+                if (prefix.includes('{url}')) return prefix.replace('{url}', target);
+
+                // If prefix already ends with '/http://' or '/https://', append target WITHOUT its scheme
+                if (prefix.endsWith('/http://') || prefix.endsWith('/https://')) {
+                    const stripped = target.replace(/^https?:\/\//i, '');
+                    return prefix + stripped;
+                }
+
+                // If prefix looks like a query param (contains '=' or '?'), use encoded
+                if (prefix.includes('?') || prefix.includes('=')) {
+                    return prefix + encodeURIComponent(target);
+                }
+
+                // Default: append raw target (some proxies expect raw path)
+                return prefix + target;
+            }
+
+            // Try configured/explicit candidates first
+            for (const proxy of candidates) {
+                try {
+                    const prefix = proxy;
+                    const fullUrl = buildProxyUrl(prefix, targetUrl);
+                    log(`Fetching ${targetUrl} via proxy ${prefix}`);
+
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), timeoutMs);
+                    let res;
+                    try {
+                        res = await fetch(fullUrl, { method: 'GET', headers: { 'Accept': 'text/html' }, mode: 'cors', signal: controller.signal });
+                    } finally {
+                        clearTimeout(id);
+                    }
+
+                    if (!res) throw new Error('No response');
+                    if (res.ok) {
+                        log(`Proxy ${prefix} succeeded: ${res.status}`);
+                        return res;
+                    } else {
+                        const snippet = await res.text().catch(() => '');
+                        log(`Proxy ${prefix} returned HTTP ${res.status}. Snippet: ${snippet.slice(0,200)}`, 'error');
+                        lastErr = new Error('HTTP ' + res.status);
+                        continue;
+                    }
+                } catch (e) {
+                    lastErr = e;
+                    log(`Proxy ${proxy} failed: ${e && e.message ? e.message : String(e)}`, 'error');
+                }
+            }
+
+            // Try built-in fallbacks
+            for (const prefix of builtIn) {
+                try {
+                    const fullUrl = buildProxyUrl(prefix, targetUrl);
+                    log(`Trying built-in proxy ${prefix}`);
+
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), timeoutMs);
+                    let res;
+                    try {
+                        res = await fetch(fullUrl, { method: 'GET', headers: { 'Accept': 'text/html' }, mode: 'cors', signal: controller.signal });
+                    } finally {
+                        clearTimeout(id);
+                    }
+
+                    if (res && res.ok) {
+                        log(`Built-in proxy ${prefix} succeeded: ${res.status}`);
+                        return res;
+                    } else {
+                        const snippet = await (res && res.text ? res.text().catch(() => '') : Promise.resolve(''));
+                        log(`Built-in proxy ${prefix} returned ${res ? res.status : 'no response'}. Snippet: ${snippet.slice(0,200)}`, 'error');
+                        lastErr = new Error('HTTP ' + (res ? res.status : 'no response'));
+                        continue;
+                    }
+                } catch (e) {
+                    lastErr = e;
+                    log(`Built-in proxy ${prefix} failed: ${e && e.message ? e.message : String(e)}`, 'error');
+                }
+            }
+
+            throw lastErr || new Error('All proxies failed');
+        }
+        async function scrapeAndValidate(row, corsProxy, searchMsg, tolerance) {
+            try {
+                // Fetch page through one of the configured CORS proxies (with retries)
+                const proxyCandidates = (corsProxy || '').split(',').map(p => p.trim()).filter(Boolean);
+                let response;
+                try {
+                    response = await fetchWithProxy(row.url, proxyCandidates);
+                } catch (e) {
+                    log(`Failed to fetch ${row.url}: ${e && e.message ? e.message : String(e)}`, 'error');
+                    throw new Error('Failed to fetch');
+                }
+
+                const html = await response.text();
+                log(`Fetched ${row.url} (${html.length} bytes)`);
+                if (html.length < 2000) {
+                    log(`Fetched HTML snippet: ${html.slice(0,1000).replace(/\s+/g,' ')}`);
+                }
+                
+               // Log first 5000 chars of HTML for price debugging
+               const htmlDebug = html.slice(0, 5000).replace(/\s+/g, ' ');
+               log(`HTML preview (first 5000 chars): ${htmlDebug}`);
+
+                 // Parse HTML
+                 const parser = new DOMParser();
+                 const doc = parser.parseFromString(html, 'text/html');
+
+                 // Extract price
+                 const actualPrice = extractPrice(doc, html);
+                 log(`Extracted price for ${row.url}: ${actualPrice === null ? 'null' : actualPrice}`);
+
+                 // Detect message
+                 const messageFound = detectMessage(doc, searchMsg);
+                 log(`Message "${searchMsg}" found: ${messageFound}`);
+
+                 // Compare prices
+                 const pass = validatePrice(actualPrice, row.expectedPrice);
+
+                 return {
+                     scenario: row.scenario,
+                     sku: row.sku,
+                     productName: row.productName,
+                     expectedPrice: row.expectedPrice.toFixed(2),
+                     actualPrice: actualPrice ? actualPrice.toFixed(2) : 'N/A',
+                     messageFound,
+                     pass,
+                     url: row.url,
+                     error: null,
+                 };
+             } catch (error) {
+                log(`Error processing ${row.url}: ${error && error.message ? error.message : String(error)}`, 'error');
+                 return {
+                     scenario: row.scenario,
+                     sku: row.sku,
+                     productName: row.productName,
+                     expectedPrice: row.expectedPrice.toFixed(2),
+                     actualPrice: 'N/A',
+                     messageFound: false,
+                     pass: false,
+                     url: row.url,
+                     error: error && error.message ? error.message : String(error),
+                 };
+             }
+         }
+
+        // ============================================
+        // Extract Price from DOM
+        // ============================================
+        function extractPrice(doc, rawHtml = '') {
+            const searchMsg = 'View Price in Cart';
+
+            // Strategy 0: Look for price near "View Price in Cart" message
+            try {
+                const bodyText = doc.body ? doc.body.innerText : '';
+                const idx = bodyText.indexOf(searchMsg);
+                if (idx !== -1) {
+                    const vicinity = bodyText.slice(idx, idx + 1000); // 1000 chars after message
+                    const priceMatch = vicinity.match(/\$\s*([\d,]+(?:\.\d{1,2})?)/);
+                    if (priceMatch) {
+                        const price = parsePriceString(priceMatch[1]);
+                        if (price && price > 5) { // Filter out tiny prices
+                            log(`Found price near "View Price in Cart" message: $${price}`);
+                            return price;
+                        }
+                    }
+                }
+            } catch (e) { /* ignore */ }
+
+            // 1) Try JSON-LD (Product/Offer)
+            try {
+                const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+                for (const s of scripts) {
+                    try {
+                        const j = JSON.parse(s.textContent || '{}');
+                        if (Array.isArray(j)) {
+                            for (const item of j) {
+                                const p = extractFromJsonLd(item);
+                                if (p && p > 5) return p; // Filter unreasonably small prices
+                            }
+                        } else {
+                            const p = extractFromJsonLd(j);
+                            if (p && p > 5) return p;
+                        }
+                    } catch (e) { /* ignore parse errors */ }
+                }
+            } catch (e) { /* ignore */ }
+
+            // 2) Meta tags (itemprop, og, product:price)
+            const metaSelectors = [
+                'meta[itemprop="price"]',
+                'meta[property="product:price:amount"]',
+                'meta[name="price"]',
+                'meta[property="og:price:amount"]'
+            ];
+            for (const sel of metaSelectors) {
+                const m = doc.querySelector(sel);
+                if (m && m.content) {
+                    const p = parsePriceString(m.content);
+                    if (p !== null && p > 5) return p;
+                }
+            }
+
+            // 3) Data attributes and common selectors
+            const attrSelectors = ['[data-price]', '[data-price-amount]', '[data-amount]'];
+            const selectors = attrSelectors.concat(['[class*="price"]', '[class*="amount"]', '[class*="sale"]', '.price-now', '.selling-price', 'span.sale-price']);
+            const candidates = [];
+            for (const sel of selectors) {
+                const els = doc.querySelectorAll(sel);
+                els.forEach(el => {
+                    if (isStrikethrough(el, doc)) return;
+                    const txt = (el.getAttribute('data-price') || el.getAttribute('data-price-amount') || el.textContent || '').trim();
+                    const p = parsePriceString(txt);
+                    if (p !== null && p > 5) candidates.push({ price: p, text: txt });
+                });
+            }
+            if (candidates.length > 0) {
+                candidates.sort((a,b)=>a.price-b.price);
+                return candidates[0].price;
+            }
+
+            // 4) Search raw HTML/text with robust regex (handles commas)
+            const pageText = (doc.body && doc.body.innerText) ? doc.body.innerText : rawHtml;
+            const regex = /\$\s*([\d,]+(?:\.\d{1,2})?)/g;
+            const matches = [...(pageText || '').matchAll(regex)].map(m => parsePriceString(m[1]));
+            if (matches.length > 0) {
+                const validPrices = matches.filter(n => n !== null && n > 5);
+                if (validPrices.length > 0) return Math.min(...validPrices);
+            }
+
+            return null;
+        }
+
+        function extractFromJsonLd(obj) {
+            if (!obj || typeof obj !== 'object') return null;
+            if (obj.offers && (obj.offers.price || (obj.offers[0] && obj.offers[0].price))) {
+                const p = obj.offers.price || (obj.offers[0] && obj.offers[0].price);
+                return parsePriceString(p);
+            }
+            if (obj.price) return parsePriceString(obj.price);
+            if (obj['@type'] && obj['@type'].toLowerCase().includes('product') && obj.offers) {
+                return parsePriceString(obj.offers.price || (obj.offers[0] && obj.offers[0].price));
+            }
+            return null;
+        }
+
+        function parsePriceString(s) {
+            if (s === null || s === undefined) return null;
+            const str = String(s).replace(/[, ]+/g, '').trim();
+            const m = str.match(/(\d+(\.\d+)?)/);
+            if (!m) return null;
+            const n = parseFloat(m[1]);
+            return Number.isFinite(n) ? n : null;
+        }
+
+        // ============================================
+        // Check if Element is Strikethrough
+        // ============================================
+        function isStrikethrough(element, doc) {
+            // Check tag names
+            if (!element) return false;
+            if (['S', 'DEL', 'STRIKE'].includes(element.tagName)) {
+                return true;
+            }
+
+            // Check parent tags
+            let parent = element.parentElement;
+            for (let i = 0; i < 3 && parent; i++) {
+                if (['S', 'DEL', 'STRIKE'].includes(parent.tagName)) {
+                    return true;
+                }
+                parent = parent.parentElement;
+            }
+
+            // Try to detect via HTML string (text-decoration style)
+            const outerHTML = element.outerHTML || '';
+            if (outerHTML.includes('text-decoration') && outerHTML.includes('line-through')) {
+                return true;
+            }
+
+            // Try computed style (may not be present for remote DOM)
+            try {
+                const style = window.getComputedStyle?.(element);
+                if (style && (style.textDecorationLine || '').includes('line-through')) return true;
+            } catch (e) { /* ignore */ }
+
+            return false;
+        }
+
+        // ============================================
+        // Detect Message in Page
+        // ============================================
+        function detectMessage(doc, searchMsg) {
+            if (!searchMsg) return false;
+            const needle = searchMsg.toLowerCase();
+            // 1) full text
+            const bodyText = (doc.body && doc.body.innerText) ? doc.body.innerText.toLowerCase() : '';
+            if (bodyText.includes(needle)) return true;
+            // 2) attributes and meta
+            const metas = Array.from(doc.querySelectorAll('meta')).map(m => (m.content||'').toLowerCase());
+            if (metas.some(m => m.includes(needle))) return true;
+            // 3) buttons/links
+            const controls = Array.from(doc.querySelectorAll('button, a, span')).map(n => (n.textContent||'').toLowerCase());
+            if (controls.some(t => t.includes(needle))) return true;
+            return false;
+        }
+
+        // ============================================
+        // Validate Price
+        // ============================================
+        function validatePrice(actualPrice, expectedPrice) {
+            if (actualPrice === null || actualPrice === undefined) return false;
+            const actualCents = Math.round(Number(actualPrice) * 100);
+            const expectedCents = Math.round(Number(expectedPrice) * 100);
+            const varianceCents = Math.abs(actualCents - expectedCents);
+            // Require exact cent match
+            return varianceCents === 0;
+        }
+
+        // ============================================
+        // Display Results
+        // ============================================
+        function showResults() {
+            hideAllSections();
+            resultsSection.classList.remove('hidden');
+
+            // Calculate stats
+            const passCount = results.filter(r => r.pass).length;
+            const failCount = results.filter(r => !r.pass).length;
+
+            document.getElementById('totalRows').textContent = results.length;
+            document.getElementById('passCount').textContent = passCount;
+            document.getElementById('failCount').textContent = failCount;
+
+            // Populate table
+            resultsBody.innerHTML = '';
+            results.forEach(result => {
+                const row = document.createElement('tr');
+
+                const statusClass = result.pass ? 'status-pass' : 'status-fail';
+                const statusText = result.pass ? 'PASS' : 'FAIL';
+                const messageText = result.messageFound ? 'Yes' : 'No';
+                const messageClass = result.messageFound ? 'message-yes' : 'message-no';
+
+                row.innerHTML = `
+                    <td>${escapeHtml(result.scenario)}</td>
+                    <td>${escapeHtml(result.sku)}</td>
+                    <td>${escapeHtml(result.productName)}</td>
+                    <td>$${result.expectedPrice}</td>
+                    <td>${result.actualPrice !== 'N/A' ? '$' + result.actualPrice : result.error ? '❌ ' + result.error : 'N/A'}</td>
+                    <td><span class="${messageClass}">${messageText}</span></td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td><a href="${result.url}" target="_blank" rel="noopener noreferrer">Open</a></td>
+                `;
+
+                resultsBody.appendChild(row);
+            });
+
+            resetBtn.classList.remove('hidden');
+        }
+
+        // ============================================
+        // Reset Handler
+        // ============================================
+        function handleResetClick() {
+            excelFileInput.value = '';
+            fileNameSpan.textContent = 'No file selected';
+            validateBtn.disabled = true;
+            resetBtn.classList.add('hidden');
+            excelData = [];
+            results = [];
+            hideAllSections();
+            corsWarning.classList.add('hidden');
+        }
+
+        // ============================================
+        // Show Error
+        // ============================================
+        function showError(message) {
+            log('Showing error to user: ' + message, 'error');
+             hideAllSections();
+             errorSection.classList.remove('hidden');
+             errorMessage.textContent = message;
+         }
+
+        // ============================================
+        // Hide All Sections
+        // ============================================
+        function hideAllSections() {
+            progressSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+        }
+
+        // ============================================
+        // Escape HTML
+        // ============================================
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;',
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    })();
+    </script>
+</body>
+</html>

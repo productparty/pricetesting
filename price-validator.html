@@ -716,16 +716,12 @@
         });
 
         // ============================================
-        // Event Listeners
+        // Event Listeners - Attach IMMEDIATELY (not in DOMContentLoaded)
         // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            excelFileInput.addEventListener('change', handleFileSelect);
-            validateBtn.addEventListener('click', handleValidateClick);
-            resetBtn.addEventListener('click', handleResetClick);
-            log('UI initialized');
-            // Hide log if empty initially
-            if (logs.length === 0 && logArea) logArea.textContent = '';
-        });
+        excelFileInput.addEventListener('change', handleFileSelect);
+        validateBtn.addEventListener('click', handleValidateClick);
+        resetBtn.addEventListener('click', handleResetClick);
+        log('Event listeners attached');
 
         // ============================================
         // File Selection Handler
